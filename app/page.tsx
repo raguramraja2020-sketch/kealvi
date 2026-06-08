@@ -50,15 +50,27 @@ export default function Home() {
   return (
     <div
       style={{
+        maxWidth: "700px",
+        margin: "auto",
         padding: "40px",
         fontFamily: "Arial",
       }}
     >
-      <h1>Polls</h1>
+      <h1
+        style={{
+          fontSize: "36px",
+          marginBottom: "30px",
+          color: "#1e293b",
+        }}
+      >
+        Poll App
+      </h1>
 
       <div
         style={{
-          marginBottom: "20px",
+          display: "flex",
+          gap: "10px",
+          marginBottom: "30px",
         }}
       >
         <input
@@ -67,24 +79,32 @@ export default function Home() {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           style={{
-            padding: "10px",
-            width: "300px",
-            marginRight: "10px",
+            padding: "12px",
+            flex: 1,
+            borderRadius: "8px",
+            border: "1px solid #ccc",
+            fontSize: "16px",
           }}
         />
 
         <button
           onClick={createPoll}
           style={{
-            padding: "10px 20px",
+            padding: "12px 20px",
+            background: "#2563eb",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
             cursor: "pointer",
+            fontWeight: "bold",
+            fontSize: "15px",
           }}
         >
           Create Poll
         </button>
       </div>
 
-      <div style={{ marginTop: "30px" }}>
+      <div>
         {polls.length === 0 ? (
           <p>No polls available</p>
         ) : (
@@ -92,13 +112,22 @@ export default function Home() {
             <div
               key={poll.id}
               style={{
-                padding: "15px",
-                border: "1px solid gray",
-                marginBottom: "10px",
-                borderRadius: "5px",
+                padding: "20px",
+                border: "1px solid #ddd",
+                marginBottom: "15px",
+                borderRadius: "12px",
+                background: "white",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             >
-              <h3>{poll.question}</h3>
+              <h3
+                style={{
+                  margin: 0,
+                  color: "#111827",
+                }}
+              >
+                {poll.question}
+              </h3>
             </div>
           ))
         )}

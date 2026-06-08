@@ -16,23 +16,28 @@
 }
 
 @layer base {
-  /* Tailwind v4 defaults `border` to currentColor — pin it to the theme so
-     plain `border` utilities render a soft, intentional line. */
+
   *,
   ::before,
   ::after {
     border-color: var(--color-border);
+    box-sizing: border-box;
   }
 
   body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+
     background-color: var(--color-background);
     color: var(--color-foreground);
-    /* subtle brand glow behind the header */
+
     background-image: radial-gradient(
       48rem 24rem at 50% -8rem,
       color-mix(in oklab, var(--color-brand) 18%, transparent),
       transparent 70%
     );
+
     background-repeat: no-repeat;
   }
 
@@ -44,7 +49,8 @@
   input:focus-visible,
   textarea:focus-visible,
   button:focus-visible {
-    outline: 2px solid color-mix(in oklab, var(--color-brand) 55%, transparent);
+    outline: 2px solid
+      color-mix(in oklab, var(--color-brand) 55%, transparent);
     outline-offset: 2px;
   }
 }
