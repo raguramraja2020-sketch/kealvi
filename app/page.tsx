@@ -7,9 +7,16 @@ export default function Home() {
   const [polls, setPolls] = useState<any[]>([]);
 
   async function fetchPolls() {
-    const res = await fetch("/api/polls");
-    const data = await res.json();
-    setPolls(data);
+    try {
+      const res = await fetch("/api/polls");
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        setPolls(data);
+      }
+    } catch (error) {
+      console.error("Error fetching polls:", error);
+    }
   }
 
   useEffect(() => {
@@ -19,58 +26,82 @@ export default function Home() {
   async function createPoll() {
     if (!question) return;
 
-    await fetch("/api/polls", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        question,
-      }),
-    });
+    try {
+      await fetch("/api/polls", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          question,
+        }),
+      });
 
-    setQuestion("");
-    fetchPolls();
+      setQuestion("");
+
+      // Refresh polls automatically
+      fetchPolls();
+
+    } catch (error) {
+      console.error("Error creating poll:", error);
+    }
   }
 
   return (
-    <div style={{ padding: "40px" }}>
+    <div
+      style={{
+        padding: "40px",
+        fontFamily: "Arial",
+      }}
+    >
       <h1>Polls</h1>
 
-      <input
-        type="text"
-        placeholder="Enter poll question"
-        value={question}
-        onChange={(e) => setQuestion(e.target.value)}
+      <div
         style={{
-          padding: "10px",
-          width: "300px",
-          marginRight: "10px",
-        }}
-      />
-
-      <button
-        onClick={createPoll}
-        style={{
-          padding: "10px 20px",
+          marginBottom: "20px",
         }}
       >
-        Create Poll
-      </button>
+        <input
+          type="text"
+          placeholder="Enter poll question"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          style={{
+            padding: "10px",
+            width: "300px",
+            marginRight: "10px",
+          }}
+        />
+
+        <button
+          onClick={createPoll}
+          style={{
+            padding: "10px 20px",
+            cursor: "pointer",
+          }}
+        >
+          Create Poll
+        </button>
+      </div>
 
       <div style={{ marginTop: "30px" }}>
-        {polls.map((poll) => (
-          <div
-            key={poll.id}
-            style={{
-              padding: "15px",
-              border: "1px solid gray",
-              marginBottom: "10px",
-            }}
-          >
-            {poll.question}
-          </div>
-        ))}
+        {polls.length === 0 ? (
+          <p>No polls available</p>
+        ) : (
+          polls.map((poll) => (
+            <div
+              key={poll.id}
+              style={{
+                padding: "15px",
+                border: "1px solid gray",
+                marginBottom: "10px",
+                borderRadius: "5px",
+              }}
+            >
+              <h3>{poll.question}</h3>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
