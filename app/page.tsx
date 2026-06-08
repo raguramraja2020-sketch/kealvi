@@ -39,11 +39,23 @@ export default function Home() {
 
       setQuestion("");
 
-      // Refresh polls automatically
       fetchPolls();
 
     } catch (error) {
       console.error("Error creating poll:", error);
+    }
+  }
+
+  async function votePoll(id: string) {
+    try {
+      await fetch(`/api/polls/${id}/vote`, {
+        method: "POST",
+      });
+
+      fetchPolls();
+
+    } catch (error) {
+      console.error("Error voting:", error);
     }
   }
 
@@ -61,6 +73,7 @@ export default function Home() {
           fontSize: "36px",
           marginBottom: "30px",
           color: "#1e293b",
+          textAlign: "center",
         }}
       >
         Poll App
@@ -122,12 +135,27 @@ export default function Home() {
             >
               <h3
                 style={{
-                  margin: 0,
+                  marginBottom: "15px",
                   color: "#111827",
                 }}
               >
                 {poll.question}
               </h3>
+
+              <button
+                onClick={() => votePoll(poll.id)}
+                style={{
+                  padding: "10px 16px",
+                  background: "#10b981",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                }}
+              >
+                👍 Vote ({poll.votes || 0})
+              </button>
             </div>
           ))
         )}
