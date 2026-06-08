@@ -2,86 +2,76 @@
 
 import { useEffect, useState } from "react";
 
-type PollOption = {
-  id: string;
-  option_text: string;
-};
-
-type Poll = {
-  id: string;
-  question: string;
-  poll_options: PollOption[];
-};
-
 export default function Home() {
-  const [polls, setPolls] = useState<Poll[]>([]);
-  const [selected, setSelected] = useState<string>("");
+  const [question, setQuestion] = useState("");
+  const [polls, setPolls] = useState<any[]>([]);
 
-  async function loadPolls() {
+  async function fetchPolls() {
     const res = await fetch("/api/polls");
     const data = await res.json();
     setPolls(data);
   }
 
   useEffect(() => {
-    loadPolls();
+    fetchPolls();
   }, []);
 
-  async function vote(pollId: string, optionId: string) {
-    await fetch(`/api/polls/${pollId}/vote`, {
+  async function createPoll() {
+    if (!question) return;
+
+    await fetch("/api/polls", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        optionId,
-        voterId: "raguram",
+        question,
       }),
     });
 
-    alert("Vote submitted!");
+    setQuestion("");
+    fetchPolls();
   }
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial" }}>
+    <div style={{ padding: "40px" }}>
       <h1>Polls</h1>
 
-      {polls.map((poll) => (
-        <div
-          key={poll.id}
-          style={{
-            border: "1px solid gray",
-            padding: "20px",
-            marginBottom: "20px",
-          }}
-        >
-          <h2>{poll.question}</h2>
+      <input
+        type="text"
+        placeholder="Enter poll question"
+        value={question}
+        onChange={(e) => setQuestion(e.target.value)}
+        style={{
+          padding: "10px",
+          width: "300px",
+          marginRight: "10px",
+        }}
+      />
 
-          {poll.poll_options.map((option) => (
-            <div key={option.id}>
-              <label>
-                <input
-                  type="radio"
-                  name={poll.id}
-                  value={option.id}
-                  onChange={() => setSelected(option.id)}
-                />
-                {option.option_text}
-              </label>
-            </div>
-          ))}
+      <button
+        onClick={createPoll}
+        style={{
+          padding: "10px 20px",
+        }}
+      >
+        Create Poll
+      </button>
 
-          <button
-            onClick={() => vote(poll.id, selected)}
+      <div style={{ marginTop: "30px" }}>
+        {polls.map((poll) => (
+          <div
+            key={poll.id}
             style={{
-              marginTop: "10px",
-              padding: "8px 16px",
+              padding: "15px",
+              border: "1px solid gray",
+              marginBottom: "10px",
             }}
           >
-            Vote
-          </button>
-        </div>
-      ))}
-    </main>
+            {poll.question}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
