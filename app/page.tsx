@@ -1,28 +1,87 @@
-import QuestionsList from "./questions-list";
-import { getQuestionsPage } from "@/lib/questions";
+"use client";
 
-// Render on every request (don't cache/prerender) so new questions show up.
-export const dynamic = "force-dynamic";
+import { useEffect, useState } from "react";
 
-const PAGE_SIZE = 10;
+type PollOption = {
+  id: string;
+  option_text: string;
+};
 
-// Server component — runs only on the server, awaits the data, renders to HTML.
-export default async function Page() {
-  const { questions, hasMore } = await getQuestionsPage(0, PAGE_SIZE);
+type Poll = {
+  id: string;
+  question: string;
+  poll_options: PollOption[];
+};
+
+export default function Home() {
+  const [polls, setPolls] = useState<Poll[]>([]);
+  const [selected, setSelected] = useState<string>("");
+
+  async function loadPolls() {
+    const res = await fetch("/api/polls");
+    const data = await res.json();
+    setPolls(data);
+  }
+
+  useEffect(() => {
+    loadPolls();
+  }, []);
+
+  async function vote(pollId: string, optionId: string) {
+    await fetch(`/api/polls/${pollId}/vote`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        optionId,
+        voterId: "raguram",
+      }),
+    });
+
+    alert("Vote submitted!");
+  }
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-5 py-10 sm:py-14">
-      <header className="mb-7">
-        <span className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-brand">
-          <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-          Live now
-        </span>
-        <h1 className="text-3xl font-semibold tracking-tight">Live Q&amp;A</h1>
-        <p className="mt-1.5 text-sm text-muted">
-          Ask a question, upvote the ones you want answered.
-        </p>
-      </header>
-      <QuestionsList initialQuestions={questions} initialHasMore={hasMore} />
+    <main style={{ padding: "40px", fontFamily: "Arial" }}>
+      <h1>Polls</h1>
+
+      {polls.map((poll) => (
+        <div
+          key={poll.id}
+          style={{
+            border: "1px solid gray",
+            padding: "20px",
+            marginBottom: "20px",
+          }}
+        >
+          <h2>{poll.question}</h2>
+
+          {poll.poll_options.map((option) => (
+            <div key={option.id}>
+              <label>
+                <input
+                  type="radio"
+                  name={poll.id}
+                  value={option.id}
+                  onChange={() => setSelected(option.id)}
+                />
+                {option.option_text}
+              </label>
+            </div>
+          ))}
+
+          <button
+            onClick={() => vote(poll.id, selected)}
+            style={{
+              marginTop: "10px",
+              padding: "8px 16px",
+            }}
+          >
+            Vote
+          </button>
+        </div>
+      ))}
     </main>
   );
 }
