@@ -27,19 +27,15 @@ export default function Home() {
     if (!question) return;
 
     try {
-      await fetch("/api/polls", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          question,
-        }),
-      });
+      const newPoll = {
+        id: Date.now().toString(),
+        question: question,
+        votes: 0,
+      };
+
+      setPolls([newPoll, ...polls]);
 
       setQuestion("");
-
-      fetchPolls();
 
     } catch (error) {
       console.error("Error creating poll:", error);
@@ -48,11 +44,18 @@ export default function Home() {
 
   async function votePoll(id: string) {
     try {
-      await fetch(`/api/polls/${id}/vote`, {
-        method: "POST",
+      const updatedPolls = polls.map((poll) => {
+        if (poll.id === id) {
+          return {
+            ...poll,
+            votes: (poll.votes || 0) + 1,
+          };
+        }
+
+        return poll;
       });
 
-      fetchPolls();
+      setPolls(updatedPolls);
 
     } catch (error) {
       console.error("Error voting:", error);
@@ -149,6 +152,7 @@ export default function Home() {
                 borderRadius: "8px",
                 cursor: "pointer",
                 fontWeight: "bold",
+                fontSize: "16px",
               }}
             >
               👍 Vote ({poll.votes || 0})
