@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "./supabase";
+import { supabase } from "../supabase";
 
 export default function Home() {
   const [session, setSession] = useState<any>(null);
