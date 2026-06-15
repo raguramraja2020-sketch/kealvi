@@ -72,125 +72,109 @@ export default function Home() {
   return (
     <div
       style={{
-        minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #0f172a, #1e293b, #312e81)",
+        maxWidth: "850px",
+        margin: "auto",
         padding: "40px",
         fontFamily: "Arial",
+        minHeight: "100vh",
+        background: "linear-gradient(to right, #eef2ff, #f8fafc)",
       }}
     >
-      <div
+      <h1
         style={{
-          maxWidth: "850px",
-          margin: "auto",
+          textAlign: "center",
+          marginBottom: "20px",
+          fontSize: "52px",
+          color: "#1e293b",
+          fontWeight: "bold",
         }}
       >
-        <h1
+        Kealvi Poll App
+      </h1>
+
+      <p
+        style={{
+          textAlign: "center",
+          marginBottom: "30px",
+          color: "#475569",
+          fontWeight: "bold",
+          fontSize: "20px",
+        }}
+      >
+        Total Polls: {polls.length}
+      </p>
+
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          marginBottom: "35px",
+        }}
+      >
+        <input
+          type="text"
+          placeholder="Enter poll question"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
           style={{
-            textAlign: "center",
+            flex: 1,
+            padding: "15px",
+            borderRadius: "12px",
+            border: "1px solid #d1d5db",
+            fontSize: "16px",
+            background: "white",
+            outline: "none",
+          }}
+        />
+
+        <button
+          onClick={createPoll}
+          style={{
+            padding: "15px 24px",
+            background: "#2563eb",
             color: "white",
-            fontSize: "60px",
-            marginBottom: "10px",
+            border: "none",
+            borderRadius: "12px",
+            cursor: "pointer",
             fontWeight: "bold",
+            fontSize: "16px",
           }}
         >
-          LiveQ/A
-        </h1>
+          Create Poll
+        </button>
+      </div>
 
+      {polls.length === 0 ? (
         <p
           style={{
             textAlign: "center",
-            color: "#cbd5e1",
-            fontSize: "18px",
-            marginBottom: "40px",
+            color: "#64748b",
           }}
         >
-          Create polls, vote instantly, and share opinions live.
+          No polls available
         </p>
-
-        <div
-          style={{
-            background: "rgba(255,255,255,0.08)",
-            backdropFilter: "blur(12px)",
-            padding: "20px",
-            borderRadius: "20px",
-            marginBottom: "35px",
-            border: "1px solid rgba(255,255,255,0.1)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-            }}
-          >
-            <input
-              type="text"
-              placeholder="Ask a new question..."
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              style={{
-                flex: 1,
-                padding: "16px",
-                borderRadius: "12px",
-                border: "none",
-                outline: "none",
-                fontSize: "16px",
-                background: "white",
-              }}
-            />
-
-            <button
-              onClick={createPoll}
-              style={{
-                padding: "16px 24px",
-                background: "#6366f1",
-                color: "white",
-                border: "none",
-                borderRadius: "12px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "16px",
-              }}
-            >
-              Create
-            </button>
-          </div>
-        </div>
-
-        <p
-          style={{
-            color: "#e2e8f0",
-            marginBottom: "25px",
-            fontWeight: "bold",
-            fontSize: "18px",
-          }}
-        >
-          Total Questions: {polls.length}
-        </p>
-
-        {polls.map((poll) => (
+      ) : (
+        polls.map((poll) => (
           <div
             key={poll.id}
             style={{
-              background: "rgba(255,255,255,0.08)",
-              backdropFilter: "blur(14px)",
-              borderRadius: "20px",
+              background: "white",
               padding: "25px",
+              borderRadius: "16px",
               marginBottom: "25px",
-              border: "1px solid rgba(255,255,255,0.1)",
-              boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
             }}
           >
-            <h2
+            <h3
               style={{
-                color: "white",
                 marginBottom: "20px",
+                color: "#111827",
                 fontSize: "28px",
+                fontWeight: "600",
               }}
             >
               {poll.question}
-            </h2>
+            </h3>
 
             <div
               style={{
@@ -209,7 +193,7 @@ export default function Home() {
                   borderRadius: "10px",
                   cursor: "pointer",
                   fontWeight: "bold",
-                  fontSize: "15px",
+                  fontSize: "16px",
                 }}
               >
                 👍 Vote ({poll.votes || 0})
@@ -225,18 +209,21 @@ export default function Home() {
                   borderRadius: "10px",
                   cursor: "pointer",
                   fontWeight: "bold",
-                  fontSize: "15px",
+                  fontSize: "16px",
                 }}
               >
                 Delete
               </button>
             </div>
 
-            <div>
+            <div
+              style={{
+                marginTop: "10px",
+              }}
+            >
               <input
                 type="text"
-                placeholder="Write your opinion..."
-                value={commentInputs[poll.id] || ""}
+                placeholder="Write a comment..."
                 onChange={(e) =>
                   setCommentInputs({
                     ...commentInputs,
@@ -245,10 +232,9 @@ export default function Home() {
                 }
                 style={{
                   width: "100%",
-                  padding: "14px",
+                  padding: "12px",
                   borderRadius: "10px",
-                  border: "none",
-                  outline: "none",
+                  border: "1px solid #d1d5db",
                   marginBottom: "12px",
                   fontSize: "15px",
                 }}
@@ -257,14 +243,14 @@ export default function Home() {
               <button
                 onClick={() => saveComment(poll.id)}
                 style={{
-                  padding: "12px 18px",
-                  background: "#8b5cf6",
+                  padding: "10px 16px",
+                  background: "#7c3aed",
                   color: "white",
                   border: "none",
-                  borderRadius: "10px",
+                  borderRadius: "8px",
                   cursor: "pointer",
                   fontWeight: "bold",
-                  marginBottom: "15px",
+                  marginBottom: "12px",
                 }}
               >
                 Save Comment
@@ -272,25 +258,28 @@ export default function Home() {
 
               <div
                 style={{
-                  background: "rgba(255,255,255,0.08)",
-                  padding: "15px",
-                  borderRadius: "12px",
+                  background: "#f8fafc",
+                  padding: "12px",
+                  borderRadius: "10px",
                 }}
               >
                 <p
                   style={{
-                    color: "#e2e8f0",
-                    margin: 0,
+                    color: "#334155",
                     fontSize: "15px",
+                    margin: 0,
                   }}
                 >
-                  💬 {poll.comments || "No comments yet"}
+                  💬 Comment:{" "}
+                  {poll.comments
+                    ? poll.comments
+                    : "No comments yet"}
                 </p>
               </div>
             </div>
           </div>
-        ))}
-      </div>
+        ))
+      )}
     </div>
   );
 }
