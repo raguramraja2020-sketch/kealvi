@@ -1,22 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabase } from "./supabase";
 
 export default function Home() {
   const [question, setQuestion] = useState("");
+  const [commentInputs, setCommentInputs] = useState<any>({});
   const [polls, setPolls] = useState<any[]>([]);
-  const [comments, setComments] = useState<any>({});
 
   async function fetchPolls() {
-    try {
-      const res = await fetch("/api/polls");
-      const data = await res.json();
+    const { data } = await supabase
+      .from("polls")
+      .select("*")
+      .order("id", { ascending: false });
 
-      if (Array.isArray(data)) {
-        setPolls(data);
-      }
-    } catch (error) {
-      console.error("Error fetching polls:", error);
+    if (data) {
+      setPolls(data);
     }
   }
 
@@ -27,153 +26,171 @@ export default function Home() {
   async function createPoll() {
     if (!question) return;
 
-    try {
-      const newPoll = {
-        id: Date.now().toString(),
-        question: question,
+    await supabase.from("polls").insert([
+      {
+        question,
         votes: 0,
-      };
+        comments: "",
+      },
+    ]);
 
-      setPolls([newPoll, ...polls]);
-
-      setQuestion("");
-
-    } catch (error) {
-      console.error("Error creating poll:", error);
-    }
+    setQuestion("");
+    fetchPolls();
   }
 
-  async function votePoll(id: string) {
-    try {
-      const updatedPolls = polls.map((poll) => {
-        if (poll.id === id) {
-          return {
-            ...poll,
-            votes: (poll.votes || 0) + 1,
-          };
-        }
+  async function votePoll(id: number, currentVotes: number) {
+    await supabase
+      .from("polls")
+      .update({
+        votes: currentVotes + 1,
+      })
+      .eq("id", id);
 
-        return poll;
-      });
-
-      setPolls(updatedPolls);
-
-    } catch (error) {
-      console.error("Error voting:", error);
-    }
+    fetchPolls();
   }
 
-  function deletePoll(id: string) {
-    const updatedPolls = polls.filter((poll) => poll.id !== id);
-    setPolls(updatedPolls);
+  async function deletePoll(id: number) {
+    await supabase
+      .from("polls")
+      .delete()
+      .eq("id", id);
+
+    fetchPolls();
+  }
+
+  async function saveComment(id: number) {
+    await supabase
+      .from("polls")
+      .update({
+        comments: commentInputs[id] || "",
+      })
+      .eq("id", id);
+
+    fetchPolls();
   }
 
   return (
     <div
       style={{
-        maxWidth: "800px",
-        margin: "auto",
+        minHeight: "100vh",
+        background:
+          "linear-gradient(135deg, #0f172a, #1e293b, #312e81)",
         padding: "40px",
         fontFamily: "Arial",
-        minHeight: "100vh",
-        background: "linear-gradient(to right, #eef2ff, #f8fafc)",
       }}
     >
-      <h1
-        style={{
-          textAlign: "center",
-          marginBottom: "20px",
-          fontSize: "52px",
-          color: "#1e293b",
-          fontWeight: "bold",
-        }}
-      >
-        Kealvi Poll App
-      </h1>
-
-      <p
-        style={{
-          textAlign: "center",
-          marginBottom: "30px",
-          color: "#475569",
-          fontWeight: "bold",
-          fontSize: "20px",
-        }}
-      >
-        Total Polls: {polls.length}
-      </p>
-
       <div
         style={{
-          display: "flex",
-          gap: "10px",
-          marginBottom: "35px",
+          maxWidth: "850px",
+          margin: "auto",
         }}
       >
-        <input
-          type="text"
-          placeholder="Enter poll question"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
+        <h1
           style={{
-            flex: 1,
-            padding: "15px",
-            borderRadius: "12px",
-            border: "1px solid #d1d5db",
-            fontSize: "16px",
-            outline: "none",
-            background: "white",
-          }}
-        />
-
-        <button
-          onClick={createPoll}
-          style={{
-            padding: "15px 24px",
-            background: "#2563eb",
+            textAlign: "center",
             color: "white",
-            border: "none",
-            borderRadius: "12px",
-            cursor: "pointer",
+            fontSize: "60px",
+            marginBottom: "10px",
             fontWeight: "bold",
-            fontSize: "16px",
           }}
         >
-          Create Poll
-        </button>
-      </div>
+          LiveQ/A
+        </h1>
 
-      {polls.length === 0 ? (
         <p
           style={{
             textAlign: "center",
-            color: "#64748b",
+            color: "#cbd5e1",
+            fontSize: "18px",
+            marginBottom: "40px",
           }}
         >
-          No polls available
+          Create polls, vote instantly, and share opinions live.
         </p>
-      ) : (
-        polls.map((poll) => (
+
+        <div
+          style={{
+            background: "rgba(255,255,255,0.08)",
+            backdropFilter: "blur(12px)",
+            padding: "20px",
+            borderRadius: "20px",
+            marginBottom: "35px",
+            border: "1px solid rgba(255,255,255,0.1)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              gap: "12px",
+            }}
+          >
+            <input
+              type="text"
+              placeholder="Ask a new question..."
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              style={{
+                flex: 1,
+                padding: "16px",
+                borderRadius: "12px",
+                border: "none",
+                outline: "none",
+                fontSize: "16px",
+                background: "white",
+              }}
+            />
+
+            <button
+              onClick={createPoll}
+              style={{
+                padding: "16px 24px",
+                background: "#6366f1",
+                color: "white",
+                border: "none",
+                borderRadius: "12px",
+                cursor: "pointer",
+                fontWeight: "bold",
+                fontSize: "16px",
+              }}
+            >
+              Create
+            </button>
+          </div>
+        </div>
+
+        <p
+          style={{
+            color: "#e2e8f0",
+            marginBottom: "25px",
+            fontWeight: "bold",
+            fontSize: "18px",
+          }}
+        >
+          Total Questions: {polls.length}
+        </p>
+
+        {polls.map((poll) => (
           <div
             key={poll.id}
             style={{
-              background: "white",
+              background: "rgba(255,255,255,0.08)",
+              backdropFilter: "blur(14px)",
+              borderRadius: "20px",
               padding: "25px",
-              borderRadius: "16px",
               marginBottom: "25px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
             }}
           >
-            <h3
+            <h2
               style={{
+                color: "white",
                 marginBottom: "20px",
-                color: "#111827",
                 fontSize: "28px",
-                fontWeight: "600",
               }}
             >
               {poll.question}
-            </h3>
+            </h2>
 
             <div
               style={{
@@ -183,7 +200,7 @@ export default function Home() {
               }}
             >
               <button
-                onClick={() => votePoll(poll.id)}
+                onClick={() => votePoll(poll.id, poll.votes)}
                 style={{
                   padding: "12px 18px",
                   background: "#10b981",
@@ -192,7 +209,7 @@ export default function Home() {
                   borderRadius: "10px",
                   cursor: "pointer",
                   fontWeight: "bold",
-                  fontSize: "16px",
+                  fontSize: "15px",
                 }}
               >
                 👍 Vote ({poll.votes || 0})
@@ -208,61 +225,72 @@ export default function Home() {
                   borderRadius: "10px",
                   cursor: "pointer",
                   fontWeight: "bold",
-                  fontSize: "16px",
+                  fontSize: "15px",
                 }}
               >
                 Delete
               </button>
             </div>
 
-            <div
-              style={{
-                marginTop: "10px",
-              }}
-            >
+            <div>
               <input
                 type="text"
-                placeholder="Write a comment..."
+                placeholder="Write your opinion..."
+                value={commentInputs[poll.id] || ""}
                 onChange={(e) =>
-                  setComments({
-                    ...comments,
+                  setCommentInputs({
+                    ...commentInputs,
                     [poll.id]: e.target.value,
                   })
                 }
                 style={{
                   width: "100%",
-                  padding: "12px",
+                  padding: "14px",
                   borderRadius: "10px",
-                  border: "1px solid #d1d5db",
+                  border: "none",
+                  outline: "none",
                   marginBottom: "12px",
                   fontSize: "15px",
                 }}
               />
 
+              <button
+                onClick={() => saveComment(poll.id)}
+                style={{
+                  padding: "12px 18px",
+                  background: "#8b5cf6",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  marginBottom: "15px",
+                }}
+              >
+                Save Comment
+              </button>
+
               <div
                 style={{
-                  background: "#f8fafc",
-                  padding: "12px",
-                  borderRadius: "10px",
+                  background: "rgba(255,255,255,0.08)",
+                  padding: "15px",
+                  borderRadius: "12px",
                 }}
               >
                 <p
                   style={{
-                    color: "#334155",
-                    fontSize: "15px",
+                    color: "#e2e8f0",
                     margin: 0,
+                    fontSize: "15px",
                   }}
                 >
-                  💬 Comment:{" "}
-                  {comments[poll.id]
-                    ? comments[poll.id]
-                    : "No comments yet"}
+                  💬 {poll.comments || "No comments yet"}
                 </p>
               </div>
             </div>
           </div>
-        ))
-      )}
+        ))}
+      </div>
     </div>
   );
 }
