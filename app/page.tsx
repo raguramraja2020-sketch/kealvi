@@ -7,9 +7,16 @@ export default function Home() {
   const [polls, setPolls] = useState<any[]>([]);
 
   async function fetchPolls() {
-    const res = await fetch("/api/polls");
-    const data = await res.json();
-    setPolls(data);
+    try {
+      const res = await fetch("/api/polls");
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        setPolls(data);
+      }
+    } catch (error) {
+      console.error("Error fetching polls:", error);
+    }
   }
 
   useEffect(() => {
@@ -19,24 +26,37 @@ export default function Home() {
   async function createPoll() {
     if (!question) return;
 
-    await fetch("/api/polls", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ question }),
-    });
+    try {
+      await fetch("/api/polls", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          question,
+        }),
+      });
 
-    setQuestion("");
-    fetchPolls();
+      setQuestion("");
+
+      fetchPolls();
+
+    } catch (error) {
+      console.error("Error creating poll:", error);
+    }
   }
 
   async function votePoll(id: string) {
-    await fetch(`/api/polls/${id}/vote`, {
-      method: "POST",
-    });
+    try {
+      await fetch(`/api/polls/${id}/vote`, {
+        method: "POST",
+      });
 
-    fetchPolls();
+      fetchPolls();
+
+    } catch (error) {
+      console.error("Error voting:", error);
+    }
   }
 
   return (
@@ -52,10 +72,11 @@ export default function Home() {
         style={{
           textAlign: "center",
           marginBottom: "30px",
-          fontSize: "50px",
+          fontSize: "42px",
+          color: "#1e293b",
         }}
       >
-        Poll App
+        Kealvi Poll App
       </h1>
 
       <div
@@ -75,6 +96,7 @@ export default function Home() {
             padding: "12px",
             borderRadius: "10px",
             border: "1px solid #ccc",
+            fontSize: "15px",
           }}
         />
 
@@ -94,35 +116,46 @@ export default function Home() {
         </button>
       </div>
 
-      {polls.map((poll) => (
-        <div
-          key={poll.id}
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "12px",
-            marginBottom: "20px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-          }}
-        >
-          <h3>{poll.question}</h3>
-
-          <button
-            onClick={() => votePoll(poll.id)}
+      {polls.length === 0 ? (
+        <p>No polls available</p>
+      ) : (
+        polls.map((poll) => (
+          <div
+            key={poll.id}
             style={{
-              marginTop: "10px",
-              padding: "10px 15px",
-              background: "#10b981",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
+              background: "white",
+              padding: "20px",
+              borderRadius: "12px",
+              marginBottom: "20px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
             }}
           >
-            👍 Vote ({poll.votes || 0})
-          </button>
-        </div>
-      ))}
+            <h3
+              style={{
+                marginBottom: "15px",
+                color: "#111827",
+              }}
+            >
+              {poll.question}
+            </h3>
+
+            <button
+              onClick={() => votePoll(poll.id)}
+              style={{
+                padding: "10px 16px",
+                background: "#10b981",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: "bold",
+              }}
+            >
+              👍 Vote ({poll.votes || 0})
+            </button>
+          </div>
+        ))
+      )}
     </div>
   );
 }
