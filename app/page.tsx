@@ -62,6 +62,11 @@ export default function Home() {
     }
   }
 
+  function deletePoll(id: string) {
+    const updatedPolls = polls.filter((poll) => poll.id !== id);
+    setPolls(updatedPolls);
+  }
+
   return (
     <div
       style={{
@@ -69,18 +74,32 @@ export default function Home() {
         margin: "auto",
         padding: "40px",
         fontFamily: "Arial",
+        minHeight: "100vh",
+        background: "linear-gradient(to right, #eef2ff, #f8fafc)",
       }}
     >
       <h1
         style={{
           textAlign: "center",
           marginBottom: "30px",
-          fontSize: "42px",
+          fontSize: "48px",
           color: "#1e293b",
         }}
       >
         Kealvi Poll App
       </h1>
+
+      <p
+        style={{
+          textAlign: "center",
+          marginBottom: "20px",
+          color: "#475569",
+          fontWeight: "bold",
+          fontSize: "18px",
+        }}
+      >
+        Total Polls: {polls.length}
+      </p>
 
       <div
         style={{
@@ -96,23 +115,25 @@ export default function Home() {
           onChange={(e) => setQuestion(e.target.value)}
           style={{
             flex: 1,
-            padding: "12px",
+            padding: "14px",
             borderRadius: "10px",
             border: "1px solid #ccc",
-            fontSize: "15px",
+            fontSize: "16px",
+            outline: "none",
           }}
         />
 
         <button
           onClick={createPoll}
           style={{
-            padding: "12px 20px",
+            padding: "14px 22px",
             background: "#2563eb",
             color: "white",
             border: "none",
             borderRadius: "10px",
             cursor: "pointer",
             fontWeight: "bold",
+            fontSize: "16px",
           }}
         >
           Create Poll
@@ -127,36 +148,60 @@ export default function Home() {
             key={poll.id}
             style={{
               background: "white",
-              padding: "20px",
-              borderRadius: "12px",
+              padding: "25px",
+              borderRadius: "14px",
               marginBottom: "20px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
             }}
           >
             <h3
               style={{
-                marginBottom: "15px",
+                marginBottom: "20px",
                 color: "#111827",
+                fontSize: "24px",
               }}
             >
               {poll.question}
             </h3>
 
-            <button
-              onClick={() => votePoll(poll.id)}
+            <div
               style={{
-                padding: "10px 16px",
-                background: "#10b981",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "16px",
+                display: "flex",
+                gap: "10px",
               }}
             >
-              👍 Vote ({poll.votes || 0})
-            </button>
+              <button
+                onClick={() => votePoll(poll.id)}
+                style={{
+                  padding: "12px 18px",
+                  background: "#10b981",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  fontSize: "16px",
+                }}
+              >
+                👍 Vote ({poll.votes || 0})
+              </button>
+
+              <button
+                onClick={() => deletePoll(poll.id)}
+                style={{
+                  padding: "12px 18px",
+                  background: "#ef4444",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  fontSize: "16px",
+                }}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         ))
       )}
