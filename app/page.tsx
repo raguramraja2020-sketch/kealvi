@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
 
 export default function Home() {
+  const [session, setSession] = useState<any>(null);
   const [question, setQuestion] = useState("");
   const [commentInputs, setCommentInputs] = useState<any>({});
   const [polls, setPolls] = useState<any[]>([]);
@@ -21,6 +22,18 @@ export default function Home() {
 
   useEffect(() => {
     fetchPolls();
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   async function createPoll() {
@@ -69,6 +82,64 @@ export default function Home() {
     fetchPolls();
   }
 
+  async function logout() {
+    await supabase.auth.signOut();
+  }
+
+  if (!session) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "column",
+          background:
+            "linear-gradient(to right, #1e3a8a, #7c3aed, #0f172a)",
+          color: "white",
+          textAlign: "center",
+          padding: "20px",
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "52px",
+            marginBottom: "20px",
+            fontWeight: "bold",
+          }}
+        >
+          Kealvi Poll App 🔐
+        </h1>
+
+        <p
+          style={{
+            fontSize: "22px",
+            marginBottom: "30px",
+            color: "#cbd5e1",
+          }}
+        >
+          Please login to continue
+        </p>
+
+        <a
+          href="/login"
+          style={{
+            padding: "14px 28px",
+            background: "#2563eb",
+            color: "white",
+            textDecoration: "none",
+            borderRadius: "12px",
+            fontWeight: "bold",
+            fontSize: "18px",
+          }}
+        >
+          Go To Login
+        </a>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
@@ -80,21 +151,42 @@ export default function Home() {
         background: "linear-gradient(to right, #eef2ff, #f8fafc)",
       }}
     >
-      <h1
+      <div
         style={{
-          textAlign: "center",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
           marginBottom: "20px",
-          fontSize: "52px",
-          color: "#1e293b",
-          fontWeight: "bold",
         }}
       >
-        Kealvi Poll App
-      </h1>
+        <h1
+          style={{
+            fontSize: "48px",
+            color: "#1e293b",
+            fontWeight: "bold",
+          }}
+        >
+          Kealvi Poll App
+        </h1>
+
+        <button
+          onClick={logout}
+          style={{
+            padding: "12px 18px",
+            background: "#ef4444",
+            color: "white",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          Logout
+        </button>
+      </div>
 
       <p
         style={{
-          textAlign: "center",
           marginBottom: "30px",
           color: "#475569",
           fontWeight: "bold",
@@ -216,66 +308,60 @@ export default function Home() {
               </button>
             </div>
 
-            <div
+            <input
+              type="text"
+              placeholder="Write a comment..."
+              onChange={(e) =>
+                setCommentInputs({
+                  ...commentInputs,
+                  [poll.id]: e.target.value,
+                })
+              }
               style={{
-                marginTop: "10px",
+                width: "100%",
+                padding: "12px",
+                borderRadius: "10px",
+                border: "1px solid #d1d5db",
+                marginBottom: "12px",
+                fontSize: "15px",
+              }}
+            />
+
+            <button
+              onClick={() => saveComment(poll.id)}
+              style={{
+                padding: "10px 16px",
+                background: "#7c3aed",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: "bold",
+                marginBottom: "12px",
               }}
             >
-              <input
-                type="text"
-                placeholder="Write a comment..."
-                onChange={(e) =>
-                  setCommentInputs({
-                    ...commentInputs,
-                    [poll.id]: e.target.value,
-                  })
-                }
+              Save Comment
+            </button>
+
+            <div
+              style={{
+                background: "#f8fafc",
+                padding: "12px",
+                borderRadius: "10px",
+              }}
+            >
+              <p
                 style={{
-                  width: "100%",
-                  padding: "12px",
-                  borderRadius: "10px",
-                  border: "1px solid #d1d5db",
-                  marginBottom: "12px",
+                  color: "#334155",
                   fontSize: "15px",
-                }}
-              />
-
-              <button
-                onClick={() => saveComment(poll.id)}
-                style={{
-                  padding: "10px 16px",
-                  background: "#7c3aed",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                  marginBottom: "12px",
+                  margin: 0,
                 }}
               >
-                Save Comment
-              </button>
-
-              <div
-                style={{
-                  background: "#f8fafc",
-                  padding: "12px",
-                  borderRadius: "10px",
-                }}
-              >
-                <p
-                  style={{
-                    color: "#334155",
-                    fontSize: "15px",
-                    margin: 0,
-                  }}
-                >
-                  💬 Comment:{" "}
-                  {poll.comments
-                    ? poll.comments
-                    : "No comments yet"}
-                </p>
-              </div>
+                💬 Comment:{" "}
+                {poll.comments
+                  ? poll.comments
+                  : "No comments yet"}
+              </p>
             </div>
           </div>
         ))
